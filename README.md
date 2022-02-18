@@ -1,9 +1,9 @@
-# FaceBook-Scraper [2020]
+# Bani-service [2022]
+(srcvirus: The following documentation is from the original github repo. It needs to be updated with the new changes. FOllow with a grain (or bag) of salt.)
 _Scrape posts from any group or user into a .csv file without needing to register for any API access_
 
 ____
 
-(srcvirus: Documentation is a bit outdated. This needs to be updated with the new changes.)
 ### How to use it?
 
 Firstly, make sure you have selenium >= 3.141.0, GeckoDriver and FireFox installed.
