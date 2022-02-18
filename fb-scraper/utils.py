@@ -2,9 +2,9 @@ import csv
 
 # creating CSV header
 def create_csv(filename):
-    with open(filename, "w+", newline='', encoding="utf-8") as save_file:
+    with open(filename, "w+") as save_file:
         writer = csv.writer(save_file)
-        writer.writerow(["Author", "uTime", "Text"])
+        # writer.writerow(["Author", "uTime", "Text"])
 
 # clean all non-alphanumberic characters       
 def strip(string):
@@ -18,6 +18,6 @@ def strip(string):
     return clean
 
 def write_to_csv(filename, data):
-    with open(filename, "a+", newline='', encoding="utf-8") as save_file:
+    with open(filename, "a+") as save_file:
         writer = csv.writer(save_file)
         writer.writerow(data)

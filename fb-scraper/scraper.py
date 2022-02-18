@@ -9,7 +9,7 @@ import time
 import calendar
 import utils
 from settings import BROWSER_EXE, FIREFOX_BINARY, GECKODRIVER, PROFILE
-
+import json
 
 class CollectPosts(object):
     """Collector of recent FaceBook posts.
@@ -20,7 +20,7 @@ class CollectPosts(object):
            USE THIS FOR EDUCATIONAL PURPOSES ONLY. DO NOT ACTAULLY RUN IT.
     """
 
-    def __init__(self, ids=["oxfess"], file="posts.csv", depth=5, delay=2):
+    def __init__(self, ids=["oxfess"], file="posts.csv", depth=5, delay=10):
         self.ids = ids
         self.out_file = file
         self.depth = depth + 1
@@ -29,13 +29,15 @@ class CollectPosts(object):
         self.browser = webdriver.Firefox(executable_path=GECKODRIVER,
                                          firefox_binary=FIREFOX_BINARY,
                                          firefox_profile=PROFILE,)
+        self.wait = WebDriverWait(self.browser, self.delay)
         utils.create_csv(self.out_file)
 
 
     def collect_page(self, page):
+        banis = dict()
         # navigate to page
         self.browser.get(
-            'https://www.facebook.com/' + page + '/')
+            'https://m.facebook.com/' + page + '/')
 
         # Scroll down depth-times and wait delay seconds to load
         # between scrolls
@@ -46,38 +48,47 @@ class CollectPosts(object):
                 "window.scrollTo(0, document.body.scrollHeight);")
 
             # Wait to load page
-            time.sleep(self.delay)
+            time.sleep(self.delay/2)
 
         # Once the full page is loaded, we can start scraping
         links = self.browser.find_elements_by_link_text("See more")
         for link in links:
             link.click()
-        posts = self.browser.find_elements_by_class_name(
-            "userContentWrapper")
-        poster_names = self.browser.find_elements_by_xpath(
-            "//a[@data-hovercard-referer]")
-
+        div = self.browser.find_element_by_id('structured_composer_async_container')
+        posts = div.find_elements_by_xpath(".//article")
+        print "Crawled " + str(len(posts)) + " posts."
+        idx = 1
         for count, post in enumerate(posts):
-            # Creating first CSV row entry with the poster name (eg. "Donald Trump")
-            analysis = [poster_names[count].text]
+            story_container = self.safe_find_element_by_xpath(post, ".//div[@class='story_body_container']")
+            span_elems = self.safe_find_elements_by_xpath(story_container, ".//span")
+            if span_elems is None:
+                continue
+            text = ""
+            for span_elem in span_elems:
+                if span_elem.text is not None and len(span_elem.text) > 0:
+                    text = span_elem.text.encode("ascii", "ignore")
+                    if len(text) > 0:
+                        if (text.startswith('\"') or text.endswith('\"') or text.endswith('.')):
+                            if text not in banis:
+                                banis[text] = idx
+                                idx += 1
 
-            # Creating a time entry.
-            time_element = post.find_element_by_css_selector("abbr")
-            utime = time_element.get_attribute("data-utime")
-            analysis.append(utime)
-
-            # Creating post text entry
-            text = post.find_element_by_class_name("userContent").text
-            status = utils.strip(text)
-            analysis.append(status)
-
-            # Write row to csv
-            utils.write_to_csv(self.out_file, analysis)
+                # Write row to csv
+                # utils.write_to_csv(self.out_file, csv_row)
+        print "Total " + str(len(banis.keys())) + " banis processed."
+        json_dict = dict()
+        json_dict["banis"] = []
+        for bani in banis.keys():
+            print ",".join([str(banis[bani]), bani])
+            json_dict["banis"].append({"index": banis[bani], "text": bani})
+        json_dict["banis"].sort(key = lambda x: x["index"])
+        with open("posts.json", "w+") as f:
+            f.write(json.dumps(json_dict))
 
     def collect_groups(self, group):
         # navigate to page
         self.browser.get(
-            'https://www.facebook.com/groups/' + group + '/')
+            'https://m.facebook.com/groups/' + group + '/')
 
         # Scroll down depth-times and wait delay seconds to load
         # between scrolls
@@ -130,11 +141,24 @@ class CollectPosts(object):
             return self.browser.find_element_by_id(elem_id)
         except NoSuchElementException:
             return None
+    
+    def safe_find_element_by_xpath(self, obj, xpath_str):
+        try:
+            return obj.find_element_by_xpath(xpath_str)
+        except NoSuchElementException:
+            return None
+
+    def safe_find_elements_by_xpath(self, obj, xpath_str):
+        try:
+            return obj.find_elements_by_xpath(xpath_str)
+        except NoSuchElementException:
+            return None
 
     def login(self, email, password):
         try:
 
-            self.browser.get("https://www.facebook.com")
+            #self.browser.get("https://www.facebook.com")
+            self.browser.get("https://m.facebook.com")
             self.browser.maximize_window()
 
             # filling the form
@@ -142,24 +166,27 @@ class CollectPosts(object):
             self.browser.find_element_by_name('pass').send_keys(password)
 
             # clicking on login button
-            self.browser.find_element_by_id('loginbutton').click()
+            # self.browser.find_element_by_id('loginbutton').click()
+            self.browser.find_element_by_name('login').click()
             # if your account uses multi factor authentication
-            mfa_code_input = self.safe_find_element_by_id('approvals_code')
+            #mfa_code_input = self.safe_find_element_by_id('approvals_code')
 
-            if mfa_code_input is None:
-                return
+            #if mfa_code_input is None:
+            #    return
 
-            mfa_code_input.send_keys(input("Enter MFA code: "))
-            self.browser.find_element_by_id('checkpointSubmitButton').click()
-
+            #mfa_code_input.send_keys(input("Enter MFA code: "))
+            #self.browser.find_element_by_id('checkpointSubmitButton').click()
+            
             # there are so many screens asking you to verify things. Just skip them all
-            while self.safe_find_element_by_id('checkpointSubmitButton') is not None:
-                dont_save_browser_radio = self.safe_find_element_by_id('u_0_3')
-                if dont_save_browser_radio is not None:
-                    dont_save_browser_radio.click()
+            #while self.safe_find_element_by_id('checkpointSubmitButton') is not None:
+            #    dont_save_browser_radio = self.safe_find_element_by_id('u_0_3')
+            #    if dont_save_browser_radio is not None:
+            #        dont_save_browser_radio.click()
 
-                self.browser.find_element_by_id(
-                    'checkpointSubmitButton').click()
+            #    self.browser.find_element_by_id(
+            #        'checkpointSubmitButton').click()
+            self.wait.until(EC.url_changes('https://m.facebook.com/'))
+            self.browser.get('https://m.facebook.com/')
 
         except Exception as e:
             print("There was some error while logging in.")

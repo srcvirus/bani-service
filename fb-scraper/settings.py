@@ -10,9 +10,9 @@ EMAIL = os.getenv("EMAIL")
 PASSWORD = os.getenv("PASSWORD")
 
 # Required binaries
-BROWSER_EXE = '/usr/bin/firefox'
-GECKODRIVER = '/usr/bin/geckodriver'
-FIREFOX_BINARY = FirefoxBinary(BROWSER_EXE)
+BROWSER_EXE = "C:\\Program Files\\Mozilla\ Firefox\\firefox.exe"
+GECKODRIVER = "C:\\Users\\shiha\\Downloads\\geckodriver-v0.30.0-win64\\geckodriver.exe"
+FIREFOX_BINARY = FirefoxBinary(r'C:\Program Files\Mozilla Firefox\firefox.exe')
 
 #  Code to disable notifications pop up of Chrome Browser
 PROFILE = webdriver.FirefoxProfile()
