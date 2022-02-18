@@ -3,20 +3,21 @@ _Scrape posts from any group or user into a .csv file without needing to registe
 
 ____
 
+(srcvirus: Documentation is a bit outdated. This needs to be updated with the new changes.)
 ### How to use it?
 
 Firstly, make sure you have selenium >= 3.141.0, GeckoDriver and FireFox installed.
 
-Store your email and password for Facebook login in credentials.txt.
+Export your email and password for Facebook login in EMAIL and PASSWORD environment variables.
 
-Use `scraper.py` to collect the data. 
+Use `main.py` to collect the data. 
 ```
-usage: fb-scraper/scraper.py [-h] [--pages PAGES [PAGES ...]] [--groups GROUPS [GROUPS ...]][-d DEPTH]
+usage: fb-scraper/main.py [-h] [--pages PAGES [PAGES ...]] [--groups GROUPS [GROUPS ...]][-d DEPTH]
 Data Collection
 arguments:
   -h, --help            show this help message and exit
   -p, --pages PAGES [PAGES ...]
-                        List the pages you want to scrape
+                        List the pages/profile you want to scrape
                         for recent posts
   
   -g, --groups GROUPS [GROUPS ...]
@@ -29,7 +30,6 @@ arguments:
 ```
 Example: ```python scraper.py --pages feelzesty -d 20```
 ____
-The output is `posts.csv` inside the script folder.
+The output is `posts.json` inside the script folder.
 
-Output is in three columns: PosterName(Author), uTime and Text
-
+Output is in two columns: index, text
