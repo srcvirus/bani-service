@@ -10,6 +10,7 @@ import calendar
 import utils
 from settings import BROWSER_EXE, FIREFOX_BINARY, GECKODRIVER, PROFILE
 import json
+import boto3
 
 class CollectPosts(object):
     """Collector of recent FaceBook posts.
@@ -84,6 +85,8 @@ class CollectPosts(object):
         json_dict["banis"].sort(key = lambda x: x["index"])
         with open("posts.json", "w+") as f:
             f.write(json.dumps(json_dict))
+            s3handle = boto3.client('s3')
+            s3handle.put_object(Body=json.dumps(json_dict), Bucket = 'banibucket', Key = 'posts.json')
 
     def collect_groups(self, group):
         # navigate to page
