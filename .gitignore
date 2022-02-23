@@ -152,3 +152,4 @@ cython_debug/
 
 # Don't add the data files.
 *.json
+*.csv
