@@ -6,7 +6,7 @@ ____
 
 ### How to use it?
 
-Firstly, make sure you have selenium >= 3.141.0, GeckoDriver and FireFox installed.
+Firstly, make sure you have selenium >= 3.141.0, GeckoDriver and FireFox installed. Install aws cli and configure with proper access credentials.
 
 Export your email and password for Facebook login in EMAIL and PASSWORD environment variables.
 
